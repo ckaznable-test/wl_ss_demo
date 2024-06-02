@@ -155,12 +155,25 @@ impl Dispatch<WlOutput, ()> for State {
         _: &Connection,
         qh: &QueueHandle<Self>,
     ) {
-        if let wl_output::Event::Done = event {
-            let Some(man) = &state.screencopy_man else {
-                return;
-            };
+        use wl_output::Event::*;
+        match event {
+            Geometry { x, y, physical_width, physical_height, make, model, .. } => {
+                println!("output geometry: {} / {} / {} / {} / {} / {}", x, y, physical_width, physical_height, make, model);
+            },
+            Mode { width, height, refresh, .. } => {
+                println!("output mode: w{} / h{} / r{}", width, height, refresh);
+            },
+            Done => {
+                let Some(man) = &state.screencopy_man else {
+                    return;
+                };
 
-            man.capture_output(0, output, qh, ());
+                man.capture_output(0, output, qh, ());
+            },
+            Scale { factor } => println!("output scale: {}", factor),
+            Name { name } => println!("output name: {}", name),
+            Description { description } => println!("output desc: {}", description),
+            _ => {},
         }
     }
 }
